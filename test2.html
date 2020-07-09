@@ -1,0 +1,214 @@
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Covid-19 cases</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+       
+    </head>
+    <body>
+        
+
+        <!-- <canvas id="chart" width="400" height="200" style="padding: 50px 50px 10px 50px;"></canvas> -->
+        <div class="chart-container" style="position: relative; height:50vh; width:80vw; padding-left:5vw; padding-bottom:10vw;">
+            <!-- <div class="chart-container" style="position: relative; height:500; width:800; padding-left:50; padding-bottom:100;">     -->
+
+            <canvas id="chart"></canvas>
+
+
+
+            <div style="font-family: Arial, Helvetica, sans-serif; padding: 0px 0px 50px 50px;">
+                  
+            
+                <h4 style="margin-top: 2px; margin-bottom: 2px;">Please select an area</h4>
+            
+               <select id="where" onchange = "getValue()">
+                    <option value="">Select area</option>
+                    
+                </select>
+                <div style="padding-top: 10px;">Source: <a href="https://coronavirus.data.gov.uk/" target="_new">https://coronavirus.data.gov.uk</a><br>
+                    About the data: <a href="https://coronavirus.data.gov.uk/about" target="_new">https://coronavirus.data.gov.uk/about</a></div>
+            
+            </div>
+                
+       <div style="font-family: Arial, Helvetica, sans-serif; padding: 100px 0px 50px 50px;">
+                This chart needs to be viewed in landscape mode. If turning your device sideways doesn't work (eg in Facebook Mobile App), please copy the link directly into a browser such as Safari, Chrome or Firefox.
+            </div>
+        </div> 
+
+        
+        
+        <script>
+
+/* if (window.matchMedia("(orientation: portrait)").matches) {
+   // you're in PORTRAIT mode
+   alert("This chart needs to be viewed in landscape mode (turn your device sideways).")
+} */
+
+
+
+                
+
+       if (sessionStorage.pick) {
+        var mylocation = sessionStorage.pick
+       } else {
+        var mylocation = 'Reading' 
+       }
+            
+
+        chartIt();
+   
+        
+        async function chartIt(){
+        const data = await getData();
+        const ctx = document.getElementById('chart').getContext('2d');
+        const myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.xs,
+                    datasets: [
+                        {
+                        label: 'Covid-19: Daily lab-confirmed cases by specimen date.',
+                        data: data.ys,
+                        fill: false,
+                        backgroundColor: '#D23333',                       
+                        }
+                       ]
+                      },
+                options: {
+                        scales: {
+                            yAxes: [{
+                                    ticks: {                                      
+                                        fontSize: 15,
+                                        fontStyle: "bold",
+                                            },
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: "Number of cases",
+                                        fontSize: 15,
+                                        fontStyle: "bold",                                        
+                                            }
+                                        }
+                                ],
+
+                                xAxes: [{
+                                    ticks: {
+                                      reverse: true,
+                                      fontStyle: "bold",
+                                            },
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: "Specimen date",
+                                        fontSize: 15,
+                                        fontStyle: "bold",                                        
+                                            }
+                                        }
+                                    ]                                
+                                },
+                        legend: {
+                            display: true,
+                            labels: {fontSize: 15,
+                            fontStyle: "bold",
+                                    }
+                                },
+                        title: {
+                            display: true,
+                            text: mylocation,
+                            fontSize: 25,
+                            fontStyle: "bold",
+                            
+
+                                }
+                            } 
+                })
+
+                // Populate dropdown box
+                var select = document.getElementById("where");
+
+                var preoptions1 = data.names.sort();
+                let preoptions2 = [...new Set(preoptions1)]
+
+                var options = preoptions2
+                for(var i = 0; i < options.length; i++) {
+                    var opt = options[i];
+                    var el = document.createElement("option");
+                    el.textContent = opt;
+                    el.value = opt;
+                    select.appendChild(el);
+                }
+
+                // Set selected value
+                select.value = sessionStorage.pick
+
+            }   
+        
+        
+        // Data from https://coronavirus.data.gov.uk/downloads/csv/coronavirus-cases_latest.csv
+        async function getData(){
+            
+            const xs = [];
+            const ys = [];
+            const names = [];
+            const myresponse = await fetch('https://c19downloads.azureedge.net/downloads/csv/coronavirus-cases_latest.csv');
+            //const myresponse = await fetch('coronavirus-cases_latest-1.csv');
+            const mydata = await myresponse.text();
+                      
+            const table = mydata.split('\n').slice(1);
+
+            var arrayLength = table.length
+            for (var i = 0; i < arrayLength; i++) {
+
+                //process row 
+                const row = table[i]
+                var row1 = row.replace('"Bournemouth, Christchurch and Poole"', 'Bournemouth Christchurch and Poole')
+                row1 = row1.replace('"Bristol, City of"', 'Bristol')
+                row1 = row1.replace('"Kingston upon Hull, City of"', 'Kingston upon Hull')
+                row1 = row1.replace('"Herefordshire, County of"', 'Herefordshire')
+
+                // turn row into array
+                const columns = row1.split(',');
+
+                const myname = columns[0]
+                names.push(myname)
+                
+                if (columns[0] == mylocation && columns[3] !== mycheck){
+                    const mydate = columns[3]
+                    xs.push(mydate)
+                    const mynumber = columns[4]
+                    ys.push(mynumber)
+                    var mycheck = mydate 
+                    }
+
+                   
+                }               
+            
+             return {xs, ys, names};
+             
+        }
+        
+
+        window.addEventListener('load', function(){
+                    if (sessionStorage.pick) {
+                        var sel = document.querySelector('#where');
+                        sel.value = sessionStorage.pick;
+                    } 
+                });
+
+        function getValue(){
+                    var sel = document.querySelector('#where');
+                    sessionStorage.pick = sel.value;
+
+                    location.reload();
+                    }
+
+
+     
+         </script>
+
+
+       
+    </body>
+</html>
