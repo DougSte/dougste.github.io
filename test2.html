@@ -152,7 +152,8 @@
             const xs = [];
             const ys = [];
             const names = [];
-            const myresponse = await fetch('https://coronavirus.data.gov.uk/downloads/csv/coronavirus-cases_latest.csv');
+            //const myresponse = await fetch('https://coronavirus.data.gov.uk/downloads/csv/coronavirus-cases_latest.csv');
+            const myresponse = await fetch('https://c19downloads.azureedge.net/downloads/csv/coronavirus-cases_latest.csv');
            
             const mydata = await myresponse.text();
                       
