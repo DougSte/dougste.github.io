@@ -184,7 +184,11 @@
                     }
 
                    
-                }               
+                }   
+                
+                names.push('Wokingham');
+                xs.push('2020-07-07');
+                ys.push(0);
             
              return {xs, ys, names};
              
@@ -194,7 +198,7 @@
         window.addEventListener('load', function(){
                     if (sessionStorage.pick) {
                         var sel = document.querySelector('#where');
-                        sel.value = sessionStorage.pick;
+                        sel.value = 'Wokingham'; //sessionStorage.pick;
                     } 
                 });
 
